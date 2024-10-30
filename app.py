@@ -9,5 +9,7 @@ g_api_key = os.getenv('GOOGLE_API_KEY')
 genai.configure(api_key=g_api_key)
 
 model = genai.GenerativeModel("gemini-1.5-flash")
-response = model.generate_content("Hello model!")
+
+input_text = str(input("Faça sua pergunta: "))
+response = model.generate_content(input_text)
 print(response.text)
