@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 import pyaudio
 import wave
 import speech_recognition as sr
+from gtts import gTTS
 import os
 
 FORMAT = pyaudio.paInt16
@@ -70,3 +71,7 @@ if os.path.exists('audio.wav'):
 # sending text to gemini model
 response = model.generate_content(text)
 print(response.text)
+
+tts = gTTS(text=response.text, lang='pt')
+tts.save("tts.mp3")
+print("Gemini response to audio generated!")
