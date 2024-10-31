@@ -4,6 +4,7 @@ import pyaudio
 import wave
 import speech_recognition as sr
 from gtts import gTTS
+from playsound import playsound
 import os
 
 FORMAT = pyaudio.paInt16
@@ -75,3 +76,8 @@ print(response.text)
 tts = gTTS(text=response.text, lang='pt')
 tts.save("tts.mp3")
 print("Gemini response to audio generated!")
+
+playsound("./tts.mp3")
+
+if os.path.exists('tts.mp3'):
+   os.remove('tts.mp3')
