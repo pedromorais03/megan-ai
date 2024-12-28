@@ -1,10 +1,138 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Flask App</title>
-</head>
-<body>
-   <h1>Gerar</h1>
-</body>
+   <head>
+      <meta charset="UTF-8">
+      <title>Megan-AI | Gravar</title>
+      <style>
+         body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            color: #fff;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+         }
+
+         h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+         }
+
+         button {
+            font-size: 1rem;
+            padding: 10px 20px;
+            margin: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+         }
+
+         button#start {
+            background-color: #34c759;
+            color: #fff;
+         }
+
+         button#start:hover {
+            background-color: #28a745;
+            transform: scale(1.05);
+         }
+
+         button#stop {
+            background-color: #ff3b30;
+            color: #fff;
+         }
+
+         button#stop:disabled {
+            background-color: #b0b0b0;
+            cursor: not-allowed;
+         }
+
+         button#stop:hover:enabled {
+            background-color: #d32f2f;
+            transform: scale(1.05);
+         }
+
+         audio {
+            margin-top: 20px;
+            width: 80%;
+            max-width: 400px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+         }
+      </style>
+   </head>
+   <body>
+      <h1>Gravar pergunta</h1>
+      <button id="start">Iniciar Gravação</button>
+      <button id="stop" disabled>Parar Gravação</button>
+      <audio id="audioPlayback" controls></audio>
+   </body>
 </html>
+
+<script>
+   // Seleciona os elementos HTML
+   const startButton = document.getElementById('start')
+   const stopButton = document.getElementById('stop')
+   const audioPlayback = document.getElementById('audioPlayback')
+   audioPlayback.style.display = 'none'
+
+   // Variáveis de controle
+   let mediaRecorder
+   let audioChunks = []
+
+   // Função para obter permissão do microfone
+   async function getMicrophoneAccess() {
+      try {
+         const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+         return stream
+      } catch (err) {
+         alert('Erro ao acessar o microfone: ' + err.message)
+      }
+   }
+
+   // Iniciar gravação
+   startButton.addEventListener('click', async () => {
+      const stream = await getMicrophoneAccess()
+      if (!stream) return
+
+      mediaRecorder = new MediaRecorder(stream)
+
+      mediaRecorder.ondataavailable = (event) => {
+         if (event.data.size > 0) {
+               audioChunks.push(event.data)
+         }
+      };
+
+      mediaRecorder.onstop = () => {
+         const audioBlob = new Blob(audioChunks, { type: 'audio/webm' })
+         audioChunks = []; // Reseta o array de chunks
+
+         // Cria um URL para reprodução do áudio
+         const audioUrl = URL.createObjectURL(audioBlob)
+         audioPlayback.src = audioUrl
+      }
+
+      mediaRecorder.start()
+      startButton.disabled = true
+      stopButton.disabled = false
+   })
+
+   // Parar gravação
+   stopButton.addEventListener('click', () => {
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+         mediaRecorder.stop();
+      }
+      startButton.disabled = false
+      stopButton.disabled = true
+      audioPlayback.style.display = 'block'
+   })
+
+</script>
