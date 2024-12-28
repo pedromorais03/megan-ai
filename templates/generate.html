@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-   <head>
-      <meta charset="UTF-8">
-      <title>Megan-AI | Gravar</title>
-      <style>
+    <head>
+        <meta charset="UTF-8">
+        <title>Megan-AI | Gravar</title>
+        <style>
          body {
             font-family: Arial, sans-serif;
             background: linear-gradient(135deg, #6a11cb, #2575fc);
@@ -67,26 +67,26 @@
             box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.3);
             border-radius: 5px;
          }
-      </style>
-   </head>
-   <body>
-      <h1>Gravar pergunta</h1>
-      <button id="start">Iniciar Gravação</button>
-      <button id="stop" disabled>Parar Gravação</button>
-      <audio id="audioPlayback" controls></audio>
-   </body>
+        </style>
+    </head>
+    <body>
+        <h1>Gravar pergunta</h1>
+        <button id="start">Iniciar Gravação</button>
+        <button id="stop" disabled>Parar Gravação</button>
+        <audio id="audioPlayback" controls></audio>
+        <button id="upload" disabled>Enviar Áudio</button>
+    </body>
 </html>
-
 <script>
    // Seleciona os elementos HTML
    const startButton = document.getElementById('start')
    const stopButton = document.getElementById('stop')
    const audioPlayback = document.getElementById('audioPlayback')
-   audioPlayback.style.display = 'none'
+   const uploadButton = document.getElementById('upload')
 
-   // Variáveis de controle
    let mediaRecorder
    let audioChunks = []
+   let audioBlob
 
    // Função para obter permissão do microfone
    async function getMicrophoneAccess() {
@@ -109,15 +109,15 @@
          if (event.data.size > 0) {
                audioChunks.push(event.data)
          }
-      };
+      }
 
       mediaRecorder.onstop = () => {
-         const audioBlob = new Blob(audioChunks, { type: 'audio/webm' })
-         audioChunks = []; // Reseta o array de chunks
+         audioBlob = new Blob(audioChunks, { type: 'audio/webm' })
+         audioChunks = [] // Reseta o array de chunks
 
-         // Cria um URL para reprodução do áudio
          const audioUrl = URL.createObjectURL(audioBlob)
          audioPlayback.src = audioUrl
+         uploadButton.disabled = false // Habilita o botão de envio
       }
 
       mediaRecorder.start()
@@ -128,11 +128,30 @@
    // Parar gravação
    stopButton.addEventListener('click', () => {
       if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-         mediaRecorder.stop();
+         mediaRecorder.stop()
       }
       startButton.disabled = false
       stopButton.disabled = true
-      audioPlayback.style.display = 'block'
    })
 
+   // Enviar áudio para a API Flask
+   uploadButton.addEventListener('click', async () => {
+      const formData = new FormData();
+      formData.append('audio', audioBlob, 'audio.webm');
+
+      const response = await fetch('/upload', {
+         method: 'POST',
+         body: formData
+      })
+
+      // if (response.ok) {
+      //    alert('Áudio enviado com sucesso!')
+      // } else {
+      //    alert('Falha ao enviar o áudio')
+      // }
+
+      setTimeout(() => {
+         // create a function to receive and play the TTS
+      }, 2000)
+   })
 </script>
